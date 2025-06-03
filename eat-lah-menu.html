@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eat Lah! - Locally Sourced Menu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&family=Varela+Round&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Open Sans', Arial, sans-serif;
+      background: #f8f8f8;
+      color: #222;
+      min-height: 100vh;
+    }
+    header {
+      background: #2e7d32;
+      color: #fff;
+      padding: 2.5rem 1rem 1.5rem 1rem;
+      text-align: center;
+      border-bottom-left-radius: 32px;
+      border-bottom-right-radius: 32px;
+      box-shadow: 0 4px 24px rgba(46,125,50,0.12);
+      margin-bottom: 1.5rem;
+    }
+    header h1 {
+      font-family: 'Varela Round', 'Montserrat', Arial, sans-serif;
+      font-size: 3.2rem;
+      margin: 0;
+      letter-spacing: 2px;
+      font-weight: 900;
+      font-style: italic;
+      color: #fff;
+      text-shadow: 0 2px 8px #2e7d3233;
+      border-radius: 12px;
+      padding: 0.2em 0.5em;
+      background: none;
+      display: inline-block;
+    }
+    header p {
+      font-size: 1.25rem;
+      margin: 0.7rem 0 0 0;
+      font-style: italic;
+      font-weight: 600;
+      color: #c8e6c9;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(46,125,50,0.13);
+      padding: 2.5rem 2rem;
+    }
+    .about {
+      margin-bottom: 2rem;
+      background: #e8f5e9;
+      padding: 1.2rem 1rem;
+      border-radius: 16px;
+      font-size: 1.13rem;
+      font-weight: 600;
+      color: #1b5e20;
+      box-shadow: 0 2px 12px #2e7d3222;
+    }
+    .qr-section {
+      text-align: center;
+      margin-bottom: 2.2rem;
+    }
+    .qr-section img {
+      border-radius: 16px;
+      box-shadow: 0 2px 12px #2e7d3233;
+      border: 3px solid #2e7d32;
+    }
+    .qr-section div {
+      margin-top: 0.3rem;
+    }
+    #order-cart {
+      display: none;
+      margin-bottom: 2rem;
+      background: rgba(232,245,233,0.85);
+      border-radius: 18px;
+      padding: 1.2rem 1rem;
+      box-shadow: 0 8px 32px #2e7d3233;
+      backdrop-filter: blur(8px);
+      border: 1.5px solid #c8e6c9;
+    }
+    #order-cart h3 {
+      color: #1b5e20;
+      margin-top: 0;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+    }
+    #cart-items li {
+      margin-bottom: 0.7rem;
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: #222;
+    }
+    #cart-items button {
+      background: none;
+      border: none;
+      color: #c62828;
+      cursor: pointer;
+      font-size: 1.1rem;
+      margin-left: 8px;
+      transition: color 0.2s;
+    }
+    #cart-items button:hover {
+      color: #ff1744;
+    }
+    #order-cart button {
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1.08rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 2px 8px #2e7d3222;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    #order-cart button:hover {
+      background: #388e3c;
+      color: #fff;
+      box-shadow: 0 4px 16px #2e7d3233;
+    }
+    #order-cart .order-message {
+      margin-top: 1rem;
+      color: #388e3c;
+      font-weight: 600;
+    }
+    .menu-section {
+      margin-bottom: 2.5rem;
+    }
+    .menu-section h2 {
+      color: #1b5e20;
+      border-bottom: 2.5px solid #c8e6c9;
+      padding-bottom: 0.4rem;
+      margin-bottom: 1.2rem;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+      padding: 1.3rem 1.2rem;
+      border-radius: 18px;
+      background: #f8f8f8;
+      box-shadow: 0 2px 16px #2e7d3222;
+      border: 1.5px solid #e0e0e0;
+      transition: box-shadow 0.2s, border 0.2s;
+      flex-wrap: wrap;
+    }
+    .menu-item:hover {
+      box-shadow: 0 6px 32px #2e7d3233;
+      border: 1.5px solid #2e7d32;
+    }
+    .item-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px #2e7d3222;
+      flex-shrink: 0;
+      max-width: 22vw;
+      max-height: 22vw;
+      min-width: 60px;
+      min-height: 60px;
+    }
+    .item-info {
+      max-width: 70%;
+      min-width: 180px;
+    }
+    .item-name {
+      font-weight: bold;
+      font-size: 1.18rem;
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.5px;
+      color: #1b5e20;
+      font-family: 'Montserrat', sans-serif;
+      word-break: break-word;
+    }
+    .item-desc {
+      font-size: 1.01rem;
+      color: #555;
+      margin-bottom: 0.2rem;
+      font-weight: 500;
+      word-break: break-word;
+    }
+    .local-badge {
+      display: inline-block;
+      background: #c8e6c9;
+      color: #1b5e20;
+      font-size: 0.85rem;
+      padding: 0.22rem 0.7rem;
+      border-radius: 14px;
+      margin-left: 0.5rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 1px 4px #2e7d3222;
+    }
+    .item-price {
+      font-size: 1.15rem;
+      color: #2e7d32;
+      font-weight: bold;
+      min-width: 60px;
+      text-align: right;
+      margin-bottom: 0.5rem;
+    }
+    .add-btn {
+      display: block;
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.2rem;
+      box-shadow: 0 2px 8px #2e7d3222;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    .add-btn:hover {
+      background: #388e3c;
+      color: #fff;
+      box-shadow: 0 4px 16px #2e7d3233;
+    }
+    @media (max-width: 900px) {
+      .container {
+        padding: 1.2rem 0.5rem;
+      }
+      header h1 {
+        font-size: 2.2rem;
+      }
+    }
+    @media (max-width: 700px) {
+      .container {
+        padding: 0.7rem 0.1rem;
+      }
+      .menu-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem 0.7rem;
+      }
+      .item-img {
+        margin-bottom: 0.7rem;
+        width: 60vw;
+        height: 60vw;
+        max-width: 320px;
+        max-height: 320px;
+        min-width: 100px;
+        min-height: 100px;
+      }
+      .item-info {
+        max-width: 100%;
+        min-width: 0;
+      }
+      .item-name {
+        font-size: 1.05rem;
+      }
+      .item-desc {
+        font-size: 0.98rem;
+      }
+    }
+    @media (max-width: 500px) {
+      header h1 {
+        font-size: 1.3rem;
+      }
+      .container {
+        padding: 0.3rem 0.01rem;
+      }
+      .about {
+        font-size: 0.98rem;
+        padding: 0.7rem 0.5rem;
+      }
+      .menu-section h2 {
+        font-size: 1rem;
+      }
+      .item-img {
+        width: 90vw;
+        height: 90vw;
+        max-width: 200px;
+        max-height: 200px;
+        min-width: 60px;
+        min-height: 60px;
+      }
+      .item-name {
+        font-size: 0.98rem;
+      }
+      .item-desc {
+        font-size: 0.92rem;
+      }
+    }
+    .item-banner {
+      display: inline-block;
+      font-size: 0.98rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      padding: 0.25rem 1rem;
+      border-radius: 16px;
+      color: #fff;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px #2e7d3222;
+      word-break: break-word;
+    }
+    .item-banner.nasi {
+      background: #2e7d32;
+    }
+    .item-banner.mango {
+      background: #fbc02d;
+      color: #222;
+    }
+    .item-banner.chicken {
+      background: #8d6e63;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Eat Lah!</h1>
+    <p>All food grown & sourced locally. Taste the difference, support the community.</p>
+  </header>
+  <div class="container">
+    <section class="about">
+      <strong>Our Philosophy:</strong> Eat Lah! is a Singaporean restaurant dedicated to serving the vibrant flavors of Singapore using the freshest ingredients, all grown and sourced from local farms and producers. Every dish celebrates the rich culinary heritage of Singapore and supports our local community.
+    </section>
+    <div id="order-cart" style="display:none; margin-bottom:2rem; background:#f1f8e9; border-radius:8px; padding:1rem;">
+      <h3 style="color:#2e7d32; margin-top:0;">Your Order</h3>
+      <ul id="cart-items" style="list-style:none; padding:0; margin:0 0 1rem 0;"></ul>
+      <div style="font-weight:bold; margin-bottom:1rem;">Total: $<span id="cart-total">0</span></div>
+      <button onclick="placeOrder()" style="background:#2e7d32; color:#fff; border:none; padding:0.6rem 1.2rem; border-radius:6px; font-size:1rem; cursor:pointer;">Place Order</button>
+      <button onclick="clearCart()" style="background:#fff; color:#2e7d32; border:1px solid #2e7d32; padding:0.6rem 1.2rem; border-radius:6px; font-size:1rem; cursor:pointer; margin-left:0.5rem;">Clear</button>
+      <div id="order-message" style="margin-top:1rem; color:#388e3c; font-weight:600;"></div>
+    </div>
+    <div id="minigames-section" style="display:none; margin-bottom:2rem; background:#fffde7; border-radius:18px; padding:1.5rem 1rem; box-shadow:0 2px 12px #2e7d3222; text-align:center;">
+      <h3 style="color:#fbc02d; margin-top:0;">Order placed! Play a minigame while you wait:</h3>
+      <button onclick="showCatchGame()" style="background:#2e7d32; color:#fff; border:none; padding:0.7rem 1.5rem; border-radius:8px; font-size:1.08rem; font-weight:700; cursor:pointer; margin:0.5rem;">Catch Game</button>
+      <button onclick="showCookGame()" style="background:#388e3c; color:#fff; border:none; padding:0.7rem 1.5rem; border-radius:8px; font-size:1.08rem; font-weight:700; cursor:pointer; margin:0.5rem;">Cook Game</button>
+      <button onclick="hideMinigames()" style="background:#fff; color:#2e7d32; border:1px solid #2e7d32; padding:0.7rem 1.5rem; border-radius:8px; font-size:1.08rem; font-weight:700; cursor:pointer; margin:0.5rem;">Back to Menu</button>
+      <div id="catch-game" style="display:none; margin-top:1.5rem;"></div>
+      <div id="cook-game" style="display:none; margin-top:1.5rem;"></div>
+    </div>
+    <section class="menu-section">
+      <h2>Menu</h2>
+      <div class="menu-item">
+        <img class="item-img" src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Nasi_Lemak%2C_Malaysian_cuisine.jpg" alt="Nasi Lemak" />
+        <div class="item-info">
+          <div class="item-banner nasi">Signature Malaysian Dish</div>
+          <div class="item-name">Nasi Lemak <span class="local-badge">Locally Sourced</span></div>
+          <div class="item-desc">Fragrant coconut rice served with crispy anchovies, peanuts, cucumber, sambal, and a hard-boiled egg. A Malaysian classic!</div>
+        </div>
+        <div>
+          <div class="item-price">$12</div>
+          <button class="add-btn" onclick="addToCart('Nasi Lemak', 12)">Add to Order</button>
+        </div>
+      </div>
+      <div class="menu-item">
+        <img class="item-img" src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Mango_sticky_rice_%28Khao_Niao_Mamuang%29.jpg" alt="Mango Sticky Rice" />
+        <div class="item-info">
+          <div class="item-banner mango">Sweet Tropical Favorite</div>
+          <div class="item-name">Mango Sticky Rice <span class="local-badge">Locally Sourced</span></div>
+          <div class="item-desc">Sweet glutinous rice topped with fresh mango slices and creamy coconut milk. A tropical treat!</div>
+        </div>
+        <div>
+          <div class="item-price">$8</div>
+          <button class="add-btn" onclick="addToCart('Mango Sticky Rice', 8)">Add to Order</button>
+        </div>
+      </div>
+      <div class="menu-item">
+        <img class="item-img" src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Hainanese_Chicken_Rice_at_Tiong_Bahru_Market%2C_Singapore_-_20051210.jpg" alt="Chicken Rice" />
+        <div class="item-info">
+          <div class="item-banner chicken">All-Time Classic</div>
+          <div class="item-name">Chicken Rice <span class="local-badge">Locally Sourced</span></div>
+          <div class="item-desc">Tender poached chicken served with aromatic rice, fresh cucumber, and house-made chili sauce.</div>
+        </div>
+        <div>
+          <div class="item-price">$11</div>
+          <button class="add-btn" onclick="addToCart('Chicken Rice', 11)">Add to Order</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="eat-lah-menu.js"></script>
+</body>
+</html> 

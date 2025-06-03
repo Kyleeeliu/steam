@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cook Game - Eat Lah!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Open Sans', Arial, sans-serif;
+      background: #f8f8f8;
+      color: #222;
+      min-height: 100vh;
+    }
+    .header {
+      background: #2e7d32;
+      color: #fff;
+      padding: 2rem 1rem 1rem 1rem;
+      text-align: center;
+      border-bottom-left-radius: 32px;
+      border-bottom-right-radius: 32px;
+      box-shadow: 0 4px 24px rgba(46,125,50,0.12);
+      margin-bottom: 1.5rem;
+    }
+    .header h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.2rem;
+      margin: 0;
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+    .back-btn {
+      display: inline-block;
+      margin: 1.5rem auto 0 auto;
+      background: #fff;
+      color: #2e7d32;
+      border: 2px solid #2e7d32;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1.08rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .back-btn:hover {
+      background: #2e7d32;
+      color: #fff;
+    }
+    #cook-game {
+      margin-top: 2rem;
+    }
+    /* --- Cook Game Animations --- */
+    .cook-card.fly-into-pot {
+      animation: fly-into-pot 0.5s cubic-bezier(.6,1.5,.6,1) forwards;
+      z-index: 10;
+    }
+    @keyframes fly-into-pot {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      60% { transform: translateY(60px) scale(1.1); }
+      100% { transform: translateY(120px) scale(0.2); opacity: 0; }
+    }
+    .cook-card.tap-bounce {
+      animation: tap-bounce 0.5s cubic-bezier(.5,1.7,.5,1);
+    }
+    @keyframes tap-bounce {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.2); }
+      60% { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+    .cook-pot.pot-bubble {
+      animation: pot-bubble 0.5s cubic-bezier(.5,1.7,.5,1);
+    }
+    @keyframes pot-bubble {
+      0% { box-shadow: 0 2px 12px #2e7d3222; }
+      30% { box-shadow: 0 8px 32px #2e7d3244, 0 0 0 8px #c8e6c9aa; }
+      60% { box-shadow: 0 2px 12px #2e7d3222; }
+      100% { box-shadow: 0 2px 12px #2e7d3222; }
+    }
+    .cook-card.swipe-slice {
+      animation: swipe-slice 0.5s cubic-bezier(.7,1.7,.7,1);
+      position: relative;
+      overflow: visible;
+    }
+    @keyframes swipe-slice {
+      0% { transform: translateX(0) rotate(0); opacity: 1; }
+      40% { transform: translateX(30px) rotate(12deg) scale(1.1); }
+      60% { transform: translateX(-30px) rotate(-12deg) scale(1.1); }
+      100% { transform: translateY(80px) scale(0.2); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Cook Game</h1>
+    <a href="eat-lah-menu.html" class="back-btn">&larr; Back to Menu</a>
+  </div>
+  <div id="cook-game"></div>
+  <script src="eat-lah-menu.js"></script>
+  <script>
+    // Set lastOrderedDish from localStorage if present
+    window.lastOrderedDish = localStorage.getItem('lastOrderedDish') || null;
+    // Render the cook game for the selected dish
+    renderCookGame();
+  </script>
+</body>
+</html> 
