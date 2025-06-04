@@ -3,7 +3,7 @@ const canvas = document.getElementById('flappy-canvas');
 const ctx = canvas.getContext('2d');
 
 // Game constants
-const GRAVITY = 0.55;
+const GRAVITY = 0.32;
 const FLAP = -7;
 const PIPE_WIDTH = 54;
 const PIPE_GAP = 120;
@@ -17,7 +17,6 @@ const GROUND_COLOR = '#ffe082';
 const GROUND_SHADOW = '#ffd54f';
 const SCORE_COLOR = '#2e7d32';
 const CHARACTER_IMAGES = [
-  'flappy-bird-character-illustration-ye37mwhxjqsct8zr.png',
   'flappy-bird-character-artwork-u3uhvs4cwrwrndie.png'
 ];
 const CANVAS_WIDTH = 600;
@@ -61,7 +60,7 @@ let gameOver = false;
 let started = false;
 let selectedCharIdx = 0;
 let birdImg = new Image();
-birdImg.src = CHARACTER_IMAGES[selectedCharIdx];
+birdImg.src = CHARACTER_IMAGES[0];
 let nextQuizIdx = 0;
 let pipeCount = 0;
 let activeQuiz = null;
@@ -358,7 +357,7 @@ function update() {
       let code = generateCouponCode(discount);
       setAwardedCoupons([{ code, percent: discount }]);
       if (discount > 0) {
-        showCouponModal(code, [code], discount >= FLAPPY_DISCOUNT_CAP, null);
+        showCouponModal(code, [code], discount >= FLAPPY_DISCOUNT_CAP, redirectToMenu);
       }
     }
   }
@@ -421,24 +420,6 @@ window.addEventListener('keydown', function(e) {
   }
 });
 
-// Character selection UI logic
-window.addEventListener('DOMContentLoaded', function() {
-  const char1Btn = document.getElementById('char1-btn');
-  const char2Btn = document.getElementById('char2-btn');
-  function updateSelection(idx) {
-    selectedCharIdx = idx;
-    birdImg.onload = function() { draw(); };
-    birdImg.src = CHARACTER_IMAGES[selectedCharIdx];
-    char1Btn.style.boxShadow = idx === 0 ? '0 0 0 3px #fbc02d' : 'none';
-    char2Btn.style.boxShadow = idx === 1 ? '0 0 0 3px #fbc02d' : 'none';
-  }
-  if (char1Btn && char2Btn) {
-    char1Btn.onclick = () => updateSelection(0);
-    char2Btn.onclick = () => updateSelection(1);
-    updateSelection(0);
-  }
-});
-
 // --- Coupon Modal UI ---
 function showCouponModal(newCode, allCodes, capReached, onClose) {
   let modal = document.getElementById('coupon-modal');
@@ -490,6 +471,10 @@ function generateCouponCode(percent) {
   // Simple code: FLAPPY5-XXXX or FLAPPY10-XXXX
   const rand = Math.floor(1000 + Math.random()*9000);
   return (percent === 0.1 ? 'FLAPPY10-' : 'FLAPPY5-') + rand;
+}
+
+function redirectToMenu() {
+  window.location.href = 'index.html';
 }
 
 resetGame();

@@ -2,16 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=360, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Cook Game - Flappy Food!</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body {
+    html, body {
       margin: 0;
-      font-family: 'Open Sans', Arial, sans-serif;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
       background: #e3f2fd;
+      touch-action: none;
+    }
+    body {
+      font-family: 'Open Sans', Arial, sans-serif;
       color: #222;
       min-height: 100vh;
+      min-width: 100vw;
+      max-width: 100vw;
+      max-height: 100vh;
+      overflow: hidden;
+      position: fixed;
+      inset: 0;
     }
     .header {
       background: #2e7d32;
@@ -22,6 +35,7 @@
       border-bottom-right-radius: 32px;
       box-shadow: 0 4px 24px rgba(46,125,50,0.12);
       margin-bottom: 1.5rem;
+      max-width: 100vw;
     }
     .header h1 {
       font-family: 'Montserrat', sans-serif;
@@ -49,9 +63,36 @@
       color: #fff;
     }
     #cook-game {
-      margin-top: 2rem;
+      margin: 0;
       display: flex;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: fixed;
+      inset: 0;
+      background: #b3e5fc;
+    }
+    #flappy-canvas {
+      display: block;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw;
+      max-height: 100vh;
+      background: #b3e5fc;
+      border-radius: 0;
+      box-shadow: none;
+      margin: 0;
+      padding: 0;
+      position: absolute;
+      top: 0; left: 0;
+      z-index: 1;
+    }
+    @media (max-width: 700px) {
+      .header h1 { font-size: 1.3rem; }
+      .header { padding: 1.2rem 0.5rem 0.7rem 0.5rem; }
     }
   </style>
 </head>
@@ -61,10 +102,6 @@
     <a href="index.html" class="back-btn">&larr; Back to Menu</a>
   </div>
   <div id="cook-game">
-    <div id="character-select" style="display:flex;justify-content:center;gap:1.5rem;margin-bottom:1.2rem;align-items:center;">
-      <button id="char1-btn" style="background:none;border:2px solid #2e7d32;border-radius:12px;padding:0.3rem 0.7rem;cursor:pointer;outline:none;transition:box-shadow 0.2s;"><img src="flappy-bird-character-illustration-ye37mwhxjqsct8zr.png" alt="Character 1" style="height:40px;width:40px;"></button>
-      <button id="char2-btn" style="background:none;border:2px solid #2e7d32;border-radius:12px;padding:0.3rem 0.7rem;cursor:pointer;outline:none;transition:box-shadow 0.2s;"><img src="flappy-bird-character-artwork-u3uhvs4cwrwrndie.png" alt="Character 2" style="height:40px;width:40px;"></button>
-    </div>
     <canvas id="flappy-canvas" width="600" height="900" style="background:#b3e5fc;border-radius:18px;box-shadow:0 4px 24px #2e7d3222;"></canvas>
   </div>
   <script src="flappy-bird.js"></script>
