@@ -6,7 +6,7 @@ const ctx = canvas.getContext('2d');
 const GRAVITY = 0.32;
 const FLAP = -7;
 const PIPE_WIDTH = 54;
-const PIPE_GAP = 120;
+const PIPE_GAP = 190;
 const PIPE_SPEED = 3.5;
 const BIRD_SIZE = 38;
 const BIRD_EMOJI = '🍗';
@@ -25,7 +25,7 @@ canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 const QUIZ_INTERVAL = 5; // Every 5 pipes, show a quiz
 const QUIZ_GAP_Y_POSITIONS = [CANVAS_HEIGHT/3, CANVAS_HEIGHT*2/3]; // two positions for quiz answers
-const QUIZ_GAP_SIZE = 140;
+const QUIZ_GAP_SIZE = 200;
 const QUIZ_PIPE_WIDTH = 140;
 const QUIZ_QUESTIONS = [
   { q: 'Which is healthier?', answers: ['Steamed', 'Fried'], correct: 0 },
@@ -71,6 +71,30 @@ const FLAPPY_DISCOUNT_CAP = 0.20;
 let handledGameOverRedirect = false;
 let pipesPassed = 0;
 let quizPipesPassed = 0;
+
+// Set up dynamic canvas resizing for 2:3 aspect ratio
+const BASE_WIDTH = 600;
+const BASE_HEIGHT = 900;
+function resizeCanvas() {
+  const container = document.getElementById('canvas-container');
+  const ww = window.innerWidth;
+  const wh = window.innerHeight;
+  let scale = Math.min(ww / BASE_WIDTH, wh / BASE_HEIGHT);
+  let cw = Math.round(BASE_WIDTH * scale);
+  let ch = Math.round(BASE_HEIGHT * scale);
+  canvas.width = BASE_WIDTH;
+  canvas.height = BASE_HEIGHT;
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
+  if (container) {
+    container.style.background = '#000';
+    container.style.justifyContent = 'center';
+    container.style.alignItems = 'center';
+  }
+}
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', resizeCanvas);
+window.addEventListener('DOMContentLoaded', resizeCanvas);
 
 function resetGame() {
   birdY = canvas.height / 2;

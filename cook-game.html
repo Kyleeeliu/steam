@@ -75,6 +75,15 @@
       inset: 0;
       background: #b3e5fc;
     }
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      overflow: hidden;
+    }
     #flappy-canvas {
       display: block;
       width: 100vw !important;
@@ -102,7 +111,9 @@
     <a href="index.html" class="back-btn">&larr; Back to Menu</a>
   </div>
   <div id="cook-game">
-    <canvas id="flappy-canvas" width="600" height="900" style="background:#b3e5fc;border-radius:18px;box-shadow:0 4px 24px #2e7d3222;"></canvas>
+    <div id="canvas-container" style="width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;">
+      <canvas id="flappy-canvas" style="background:#b3e5fc;display:block;"></canvas>
+    </div>
   </div>
   <script src="flappy-bird.js"></script>
 </body>
