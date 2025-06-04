@@ -44,6 +44,9 @@ function updateCart() {
     total -= discountAmt;
     total = Math.max(0, Math.round(total * 100) / 100);
     if (couponMsg) couponMsg.textContent = 'Coupon applied!';
+    if (coupon.percent >= 0.20) {
+      couponMsg.textContent += ' (Max 20% discount applied)';
+    }
   } else {
     if (couponMsg) couponMsg.textContent = '';
   }
@@ -65,8 +68,18 @@ function placeOrder() {
   if (cart.length > 0) {
     lastOrderedDish = cart[cart.length - 1].name;
   }
-  document.getElementById('order-message').textContent = 'Thank you! Your order has been placed.';
-  clearCart();
+  // Calculate bill details before clearing cart
+  const billItems = cart.map(item => ({ ...item }));
+  let subtotal = billItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const coupon = getCouponDiscount();
+  let discount = 0;
+  let discountText = '';
+  if (coupon && subtotal > 0) {
+    discount = Math.round(subtotal * coupon.percent * 100) / 100;
+    discountText = `<tr><td colspan='2' style='color:#2e7d32;font-weight:600;'>Coupon (${coupon.code})</td><td style='color:#2e7d32;font-weight:600;'>- $${discount.toFixed(2)}</td></tr>`;
+    subtotal -= discount;
+    subtotal = Math.max(0, Math.round(subtotal * 100) / 100);
+  }
   // Remove 5% coupon after use, keep 10% for future
   if (typeof window !== 'undefined') {
     const input = document.getElementById('coupon-code-input');
@@ -76,174 +89,106 @@ function placeOrder() {
     }
     // Do not remove 10% coupon (future)
   }
-  setTimeout(() => {
-    document.getElementById('order-cart').style.display = 'none';
-    showMinigames();
-  }, 1200);
-}
-function showMinigames() {
-  // Instead of showing a section, redirect to the food journey page
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('show_food_journey', '1');
-    window.location.href = 'food-journey.html';
+  // Clear cart and show bill
+  cart = [];
+  const cartDiv = document.getElementById('order-cart');
+  cartDiv.style.display = 'block';
+  cartDiv.innerHTML = `
+    <h3 style='color:#2e7d32;margin-top:0;'>Your Bill</h3>
+    <table style='width:100%;margin-bottom:1.2rem;font-size:1.08rem;'>
+      <thead><tr><th style='text-align:left;'>Item</th><th style='text-align:center;'>Qty</th><th style='text-align:right;'>Price</th></tr></thead>
+      <tbody>
+        ${billItems.map(item => `<tr><td>${item.name}</td><td style='text-align:center;'>${item.qty}</td><td style='text-align:right;'>$${(item.price * item.qty).toFixed(2)}</td></tr>`).join('')}
+        <tr><td colspan='2' style='font-weight:600;'>Subtotal</td><td style='text-align:right;font-weight:600;'>$${billItems.reduce((sum, item) => sum + item.price * item.qty, 0).toFixed(2)}</td></tr>
+        ${discountText}
+        <tr><td colspan='2' style='font-weight:700;color:#2e7d32;'>Total</td><td style='text-align:right;font-weight:700;color:#2e7d32;'>$${subtotal.toFixed(2)}</td></tr>
+      </tbody>
+    </table>
+    <div style='font-size:1.15rem;color:#388e3c;font-weight:700;margin-bottom:0.7rem;'>Thank you! Your order has been placed.</div>
+    <button id="call-staff-btn" style='background:#fbc02d; color:#222; border:none; padding:0.7rem 1.5rem; border-radius:8px; font-size:1.08rem; font-weight:700; cursor:pointer; margin-bottom:0.7rem;'>Call Staff / Checkout</button>
+    <div id="call-staff-msg" style="margin:0.7rem 0 0.2rem 0;font-weight:600;color:#2e7d32;"></div>
+    <button onclick="resetCartUI()" style='background:#fff; color:#2e7d32; border:1.5px solid #2e7d32; padding:0.6rem 1.2rem; border-radius:6px; font-size:1rem; cursor:pointer;'>Close</button>
+    <button id="play-game-btn" style="background:#2e7d32;color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:8px;font-size:1.08rem;font-weight:700;cursor:pointer;margin:0.7rem 0 0.2rem 0;display:block;width:100%;">Play Game</button>
+  `;
+  // Add call staff button logic
+  const callBtn = document.getElementById('call-staff-btn');
+  if (callBtn) {
+    callBtn.onclick = function() {
+      callBtn.disabled = true;
+      callBtn.style.opacity = '0.6';
+      document.getElementById('call-staff-msg').textContent = 'A staff member has been notified and will assist you shortly.';
+    };
   }
-}
-function hideMinigames() {
-  // No longer needed
-}
-
-// --- Interactive Food Journey Story ---
-function renderFoodJourneyStory() {
-  let storyIdx = 0;
-  const story = [
-    {
-      emoji: '🌱',
-      title: 'It Starts on the Farm',
-      text: 'Our journey begins with local farmers planting and nurturing crops and raising animals with care.',
-      interactive: 'harvest',
-    },
-    {
-      emoji: '🚜',
-      title: 'Harvest & Collection',
-      text: 'When the time is right, ingredients are harvested and collected fresh from the fields.',
-      interactive: null,
-    },
-    {
-      emoji: '🚚',
-      title: 'Transport to Market',
-      text: 'The fresh produce and ingredients are delivered to local markets and restaurants, reducing food miles.',
-      interactive: 'quiz',
-    },
-    {
-      emoji: '👩‍🍳',
-      title: 'Prepared by Our Chefs',
-      text: 'Our chefs select the best local ingredients and prepare your meal with love and skill.',
-      interactive: null,
-    },
-    {
-      emoji: '🍽️',
-      title: 'Served to You',
-      text: 'Your delicious meal is served, fresh and full of local flavor. Enjoy!',
-      interactive: null,
-    },
-    {
-      emoji: '🎉',
-      title: 'You Did It!',
-      text: "Thanks for learning about your food's journey! Here's a 10% off coupon for your next order: <b>EATLAH10</b>",
-      interactive: null,
-    }
-  ];
-  let storyDiv = document.getElementById('food-journey-story');
-  if (!storyDiv) {
-    storyDiv = document.createElement('div');
-    storyDiv.id = 'food-journey-story';
-    document.getElementById('minigames-section').innerHTML = '';
-    document.getElementById('minigames-section').appendChild(storyDiv);
+  const playGameBtn = document.getElementById('play-game-btn');
+  if (playGameBtn) {
+    playGameBtn.onclick = function() {
+      window.location.href = 'cook-game.html';
+    };
   }
-  function renderPanel() {
-    const s = story[storyIdx];
-    // Visual aid for each step
-    let visual = `<div style='font-size:3rem;'>${s.emoji}</div>`;
-    // Interactive: Harvest wheat
-    if (s.interactive === 'harvest') {
-      // Render a field of clickable wheat
-      const wheatCount = 8;
-      let harvested = 0;
-      visual = `<div style='display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:1rem;'>` +
-        Array.from({length: wheatCount}).map((_,i) => `<span class='wheat-emoji' data-idx='${i}' style='font-size:2.2rem;cursor:pointer;transition:transform 0.2s;'>🌾</span>`).join('') +
-        `</div>`;
-      storyDiv.innerHTML = `
-        <div style="max-width:340px;margin:2rem auto;background:#fffde7;border-radius:18px;box-shadow:0 4px 24px #2e7d3222;padding:2rem 1.2rem;text-align:center;">
-          ${visual}
-          <div style="font-weight:700;font-size:1.2rem;color:#2e7d32;margin:1rem 0 0.5rem 0;">${s.title}</div>
-          <div style="font-size:1.08rem;color:#333;margin-bottom:1.5rem;">Click each wheat to harvest!</div>
-          <div id='harvest-progress' style='color:#2e7d32;font-weight:600;margin-bottom:1rem;'>0 / ${wheatCount} harvested</div>
-        </div>
-      `;
-      const wheatEls = Array.from(storyDiv.querySelectorAll('.wheat-emoji'));
-      wheatEls.forEach(el => {
-        el.onclick = function() {
-          if (!el.classList.contains('harvested')) {
-            el.classList.add('harvested');
-            el.style.transform = 'scale(1.3) rotate(-20deg)';
-            el.style.opacity = '0.4';
-            harvested++;
-            document.getElementById('harvest-progress').textContent = `${harvested} / ${wheatCount} harvested`;
-            if (harvested === wheatCount) {
-              setTimeout(() => {
-                storyIdx++;
-                renderPanel();
-              }, 600);
-            }
-          }
-        };
-      });
-      return;
-    }
-    // Interactive: Quiz for transport
-    if (s.interactive === 'quiz') {
-      visual = `<div style='font-size:3rem;'>🚚</div>`;
-      storyDiv.innerHTML = `
-        <div style="max-width:340px;margin:2rem auto;background:#fffde7;border-radius:18px;box-shadow:0 4px 24px #2e7d3222;padding:2rem 1.2rem;text-align:center;">
-          ${visual}
-          <div style="font-weight:700;font-size:1.2rem;color:#2e7d32;margin:1rem 0 0.5rem 0;">${s.title}</div>
-          <div style="font-size:1.08rem;color:#333;margin-bottom:1.5rem;">Why is eating local food better for the environment?</div>
-          <button class='quiz-btn' style='background:#e8f5e9;color:#2e7d32;border:2px solid #2e7d32;padding:0.5rem 1.2rem;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;margin:0.3rem;'>A. It reduces food miles and emissions</button><br>
-          <button class='quiz-btn' style='background:#e8f5e9;color:#2e7d32;border:2px solid #2e7d32;padding:0.5rem 1.2rem;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;margin:0.3rem;'>B. It makes food more expensive</button><br>
-          <button class='quiz-btn' style='background:#e8f5e9;color:#2e7d32;border:2px solid #2e7d32;padding:0.5rem 1.2rem;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;margin:0.3rem;'>C. It takes longer to reach you</button>
-          <div id='quiz-feedback' style='margin-top:1rem;font-weight:600;color:#c62828;'></div>
-        </div>
-      `;
-      const btns = Array.from(storyDiv.querySelectorAll('.quiz-btn'));
-      btns[0].onclick = () => {
-        document.getElementById('quiz-feedback').textContent = 'Correct!';
-        btns.forEach(b => b.disabled = true);
-        btns[0].style.background = '#2e7d32';
-        btns[0].style.color = '#fff';
-        setTimeout(() => {
-          storyIdx++;
-          renderPanel();
-        }, 900);
-      };
-      btns[1].onclick = btns[2].onclick = () => {
-        document.getElementById('quiz-feedback').textContent = 'Try again!';
-      };
-      return;
-    }
-    // Default: normal panel with visual
-    storyDiv.innerHTML = `
-      <div style="max-width:340px;margin:2rem auto;background:#fffde7;border-radius:18px;box-shadow:0 4px 24px #2e7d3222;padding:2rem 1.2rem;text-align:center;">
-        ${visual}
-        <div style="font-weight:700;font-size:1.2rem;color:#2e7d32;margin:1rem 0 0.5rem 0;">${s.title}</div>
-        <div style="font-size:1.08rem;color:#333;margin-bottom:1.5rem;">${s.text}</div>
-        ${storyIdx < story.length-1 ? `<button style='background:#2e7d32;color:#fff;border:none;padding:0.6rem 1.5rem;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;' id='story-next-btn'>Next</button>` : ''}
-      </div>
-    `;
-    if (storyIdx === story.length-1) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('eatlah_coupon', 'EATLAH10');
-      }
-    }
-    const nextBtn = document.getElementById('story-next-btn');
-    if (nextBtn) {
-      nextBtn.onclick = () => {
-        storyIdx++;
-        renderPanel();
-      };
-    }
-  }
-  renderPanel();
 }
 
 // --- Coupon redemption in main menu ---
 function getCouponDiscount() {
   if (typeof window !== 'undefined') {
     const input = document.getElementById('coupon-code-input');
-    const code = input ? input.value.trim().toUpperCase() : '';
-    const stored5 = localStorage.getItem('eatlah_coupon');
-    const stored10 = localStorage.getItem('eatlah_future_coupon');
-    if (code && stored5 && code === stored5) return { percent: 0.05, code };
-    if (code && stored10 && code === stored10) return { percent: 0.10, code };
+    const codeStr = input ? input.value.trim().toUpperCase() : '';
+    if (!codeStr) return null;
+    // Accept multiple codes, separated by comma or space
+    const codes = codeStr.split(/[,\s]+/).filter(Boolean);
+    let totalPercent = 0;
+    let validCodes = [];
+    let flappyCoupons = [];
+    try {
+      flappyCoupons = JSON.parse(localStorage.getItem('flappy_food_coupons') || '[]');
+    } catch (e) { flappyCoupons = []; }
+    const used = new Set();
+    for (let code of codes) {
+      if (used.has(code)) continue;
+      used.add(code);
+      // 5% coupon
+      const stored5 = localStorage.getItem('eatlah_coupon');
+      if (stored5 && code === stored5) {
+        totalPercent += 0.05;
+        validCodes.push(code);
+        continue;
+      }
+      // 10% coupon
+      const stored10 = localStorage.getItem('eatlah_future_coupon');
+      if (stored10 && code === stored10) {
+        totalPercent += 0.10;
+        validCodes.push(code);
+        continue;
+      }
+      // Flappy Bird coupons
+      const flappy = flappyCoupons.find(c => c.code === code);
+      if (flappy) {
+        totalPercent += flappy.percent;
+        validCodes.push(code);
+        continue;
+      }
+    }
+    if (totalPercent > 0.20) totalPercent = 0.20;
+    if (validCodes.length) return { percent: totalPercent, code: validCodes.join(', ') };
   }
   return null;
+}
+
+// Remove the floating Play Food Journey Game button if present
+window.addEventListener('DOMContentLoaded', function() {
+  const oldBtn = document.getElementById('play-food-journey-main-btn');
+  if (oldBtn) oldBtn.remove();
+});
+
+function resetCartUI() {
+  const cartDiv = document.getElementById('order-cart');
+  cartDiv.innerHTML = `
+    <h3 style="color:#2e7d32; margin-top:0;">Your Order</h3>
+    <ul id="cart-items" style="list-style:none; padding:0; margin:0 0 1rem 0;"></ul>
+    <div style="font-weight:bold; margin-bottom:1rem;">Total: $<span id="cart-total">0</span></div>
+    <button onclick="placeOrder()" style="background:#2e7d32; color:#fff; border:none; padding:0.6rem 1.2rem; border-radius:6px; font-size:1rem; cursor:pointer;">Place Order</button>
+    <button onclick="clearCart()" style="background:#fff; color:#2e7d32; border:1px solid #2e7d32; padding:0.6rem 1.2rem; border-radius:6px; font-size:1rem; cursor:pointer; margin-left:0.5rem;">Clear</button>
+    <div id="order-message" style="margin-top:1rem; color:#388e3c; font-weight:600;"></div>
+  `;
+  cartDiv.style.display = 'none';
+  updateCart();
 } 
