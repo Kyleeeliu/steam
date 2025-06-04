@@ -70,6 +70,8 @@ let flappyDiscount = parseFloat(localStorage.getItem('flappy_food_discount') || 
 const FLAPPY_DISCOUNT_PER = 0.04;
 const FLAPPY_DISCOUNT_CAP = 0.20;
 let handledGameOverRedirect = false;
+let pipesPassed = 0;
+let quizPipesPassed = 0;
 
 function resetGame() {
   birdY = canvas.height / 2;
@@ -82,6 +84,8 @@ function resetGame() {
   localStorage.setItem('flappy_food_discount', '0');
   setAwardedCoupons([]);
   handledGameOverRedirect = false;
+  pipesPassed = 0;
+  quizPipesPassed = 0;
 }
 
 function drawBackground() {
@@ -209,14 +213,19 @@ function drawScore() {
   ctx.font = 'bold 32px Montserrat, sans-serif';
   ctx.fillStyle = SCORE_COLOR;
   ctx.textAlign = 'center';
-  ctx.fillText(score, canvas.width/2, 60);
-  ctx.font = 'bold 16px Montserrat, sans-serif';
-  ctx.fillStyle = '#888';
-  ctx.fillText('High: ' + highScore, canvas.width/2, 85);
-  if (flappyDiscount > 0) {
+  let pendingDiscount = ((pipesPassed - quizPipesPassed) * 0.0025) + (quizPipesPassed * 0.0125);
+  if (pendingDiscount > FLAPPY_DISCOUNT_CAP) pendingDiscount = FLAPPY_DISCOUNT_CAP;
+  if (!gameOver) {
+    ctx.fillText((pendingDiscount*100).toFixed(2) + '%', canvas.width/2, 60);
     ctx.font = 'bold 18px Montserrat, sans-serif';
     ctx.fillStyle = '#fbc02d';
-    ctx.fillText('Discount: ' + Math.round(flappyDiscount*100) + '%', canvas.width/2, 110);
+    ctx.fillText('Pending Discount', canvas.width/2, 90);
+  }
+  if (gameOver && flappyDiscount > 0) {
+    ctx.fillText((flappyDiscount*100).toFixed(2) + '%', canvas.width/2, 60);
+    ctx.font = 'bold 18px Montserrat, sans-serif';
+    ctx.fillStyle = '#fbc02d';
+    ctx.fillText('Final Discount', canvas.width/2, 90);
   }
 }
 
@@ -225,12 +234,9 @@ function drawGameOver() {
   ctx.fillStyle = '#c62828';
   ctx.textAlign = 'center';
   ctx.fillText('Game Over!', canvas.width/2, canvas.height/2-20);
-  ctx.font = '20px Montserrat, sans-serif';
-  ctx.fillStyle = '#333';
-  ctx.fillText('Score: ' + score, canvas.width/2, canvas.height/2+18);
   ctx.font = '16px Montserrat, sans-serif';
   ctx.fillStyle = '#2e7d32';
-  ctx.fillText('Tap/click/space to restart', canvas.width/2, canvas.height/2+48);
+  ctx.fillText('Tap/click/space to restart', canvas.width/2, canvas.height/2+24);
 }
 
 function spawnPipe() {
@@ -308,27 +314,8 @@ function update() {
       if (!pipe.passed && pipe.x + QUIZ_PIPE_WIDTH < canvas.width/4 - BIRD_SIZE/2) {
         pipe.passed = true;
         score++;
-        if (flappyDiscount < FLAPPY_DISCOUNT_CAP) {
-          // Award coupon: alternate 5% and 10% (or always 5% if you prefer)
-          let percent = (flappyDiscount + 0.1 <= FLAPPY_DISCOUNT_CAP) ? 0.1 : 0.05;
-          if (flappyDiscount + percent > FLAPPY_DISCOUNT_CAP) {
-            percent = FLAPPY_DISCOUNT_CAP - flappyDiscount;
-          }
-          flappyDiscount = Math.min(FLAPPY_DISCOUNT_CAP, flappyDiscount + percent);
-          localStorage.setItem('flappy_food_discount', flappyDiscount.toString());
-          // Award coupon code
-          let coupons = getAwardedCoupons();
-          let newCode = generateCouponCode(percent);
-          coupons.push({ code: newCode, percent });
-          setAwardedCoupons(coupons);
-          // Show modal
-          showCouponModal(newCode, coupons.map(c=>c.code), flappyDiscount >= FLAPPY_DISCOUNT_CAP, redirectToMenu);
-          // If cap reached, end game
-          if (flappyDiscount >= FLAPPY_DISCOUNT_CAP) {
-            gameOver = true;
-            started = false;
-          }
-        }
+        pipesPassed++;
+        quizPipesPassed++;
         if (score > highScore) {
           highScore = score;
           localStorage.setItem('flappy_food_highscore', highScore);
@@ -348,6 +335,7 @@ function update() {
       if (!pipe.passed && pipe.x + PIPE_WIDTH < canvas.width/4 - BIRD_SIZE/2) {
         pipe.passed = true;
         score++;
+        pipesPassed++;
         if (score > highScore) {
           highScore = score;
           localStorage.setItem('flappy_food_highscore', highScore);
@@ -363,14 +351,14 @@ function update() {
     started = false;
     if (!handledGameOverRedirect) {
       handledGameOverRedirect = true;
-      // Check if user has any coupons
-      let coupons = getAwardedCoupons();
-      if (coupons.length > 0) {
-        // Show modal with all codes, then redirect after closing
-        showCouponModal(null, coupons.map(c=>c.code), flappyDiscount >= FLAPPY_DISCOUNT_CAP, redirectToMenu);
-      } else {
-        // No coupons, redirect immediately
-        setTimeout(redirectToMenu, 1200);
+      let discount = ((pipesPassed - quizPipesPassed) * 0.0025) + (quizPipesPassed * 0.0125);
+      if (discount > FLAPPY_DISCOUNT_CAP) discount = FLAPPY_DISCOUNT_CAP;
+      flappyDiscount = discount;
+      localStorage.setItem('flappy_food_discount', flappyDiscount.toString());
+      let code = generateCouponCode(discount);
+      setAwardedCoupons([{ code, percent: discount }]);
+      if (discount > 0) {
+        showCouponModal(code, [code], discount >= FLAPPY_DISCOUNT_CAP, null);
       }
     }
   }
@@ -502,11 +490,6 @@ function generateCouponCode(percent) {
   // Simple code: FLAPPY5-XXXX or FLAPPY10-XXXX
   const rand = Math.floor(1000 + Math.random()*9000);
   return (percent === 0.1 ? 'FLAPPY10-' : 'FLAPPY5-') + rand;
-}
-
-// Add redirect after game over
-function redirectToMenu() {
-  window.location.href = 'eat-lah-menu.html';
 }
 
 resetGame();
