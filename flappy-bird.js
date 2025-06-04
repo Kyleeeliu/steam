@@ -378,10 +378,12 @@ function update() {
       if (discount > FLAPPY_DISCOUNT_CAP) discount = FLAPPY_DISCOUNT_CAP;
       flappyDiscount = discount;
       localStorage.setItem('flappy_food_discount', flappyDiscount.toString());
-      let code = generateCouponCode(discount);
-      setAwardedCoupons([{ code, percent: discount }]);
       if (discount > 0) {
-        showCouponModal(code, [code], discount >= FLAPPY_DISCOUNT_CAP, redirectToMenu);
+        let coupon = generateCouponCode(discount);
+        setAwardedCoupons([coupon]);
+        showCouponModal(coupon.code, [coupon.code], discount >= FLAPPY_DISCOUNT_CAP, redirectToMenu, coupon.expiry);
+      } else {
+        redirectToMenu();
       }
     }
   }
@@ -445,7 +447,7 @@ window.addEventListener('keydown', function(e) {
 });
 
 // --- Coupon Modal UI ---
-function showCouponModal(newCode, allCodes, capReached, onClose) {
+function showCouponModal(newCode, allCodes, capReached, onClose, expiry) {
   let modal = document.getElementById('coupon-modal');
   if (!modal) {
     modal = document.createElement('div');
@@ -465,6 +467,7 @@ function showCouponModal(newCode, allCodes, capReached, onClose) {
       <div id="coupon-new-code" style="font-size:1.5rem;font-weight:700;color:#fbc02d;margin:0.7rem 0 0.5rem 0;"></div>
       <div style="font-size:1.08rem;margin-bottom:0.7rem;">Copy this code and enter it at checkout:</div>
       <div id="coupon-all-codes" style="font-size:1.08rem;margin-bottom:0.7rem;"></div>
+      <div id="coupon-expiry-msg" style="color:#2e7d32;font-weight:600;margin-bottom:0.7rem;"></div>
       <div id="coupon-cap-msg" style="color:#c62828;font-weight:600;margin-bottom:0.7rem;"></div>
       <button id="close-coupon-modal" style="background:#2e7d32;color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:8px;font-size:1.08rem;font-weight:700;cursor:pointer;">OK</button>
     </div>`;
@@ -474,6 +477,7 @@ function showCouponModal(newCode, allCodes, capReached, onClose) {
   document.getElementById('coupon-new-code').textContent = newCode ? newCode : '';
   document.getElementById('coupon-all-codes').innerHTML =
     'Your codes: <span style="color:#2e7d32;font-weight:600;">' + allCodes.join(', ') + '</span>';
+  document.getElementById('coupon-expiry-msg').textContent = expiry ? `This coupon lasts for 2 months (expires: ${expiry})` : '';
   document.getElementById('coupon-cap-msg').textContent = capReached ? 'You have reached the maximum 20% discount! No more coupons can be earned.' : '';
   document.getElementById('close-coupon-modal').onclick = function() {
     modal.style.display = 'none';
@@ -492,9 +496,12 @@ function setAwardedCoupons(codes) {
 }
 
 function generateCouponCode(percent) {
-  // Simple code: FLAPPY5-XXXX or FLAPPY10-XXXX
   const rand = Math.floor(1000 + Math.random()*9000);
-  return (percent === 0.1 ? 'FLAPPY10-' : 'FLAPPY5-') + rand;
+  const code = (percent === 0.1 ? 'FLAPPY10-' : 'FLAPPY5-') + rand;
+  // Expiry: 2 months from now
+  const now = new Date();
+  const expiry = new Date(now.getFullYear(), now.getMonth() + 2, now.getDate());
+  return { code, percent, expiry: expiry.toISOString().slice(0,10) };
 }
 
 function redirectToMenu() {
